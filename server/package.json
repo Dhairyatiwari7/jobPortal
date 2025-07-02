@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@clerk/express": "^1.7.3",
     "@sentry/node": "^9.30.0",
     "@sentry/tracing": "^7.120.3",
     "async": "^3.2.6",
