@@ -22,7 +22,7 @@ export const getJobById=async(req,res)=>{
         if(!job){
             return res.json({success:false,message:"No jobs found with this id"});
         }
-        return res.json({success:true,jobs});
+        return res.json({success:true,job});
     } catch (error) {
         return res.json({success:false,message:error.message});
     }

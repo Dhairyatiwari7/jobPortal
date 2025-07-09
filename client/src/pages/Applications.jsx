@@ -1,23 +1,61 @@
-import React, { useState } from "react";
+import React, { useState,useContext } from "react";
 import Navbar from "../components/Navbar";
-import { assets, jobsApplied } from "../assets/assets";
+import { assets,} from "../assets/assets";
 import moment from "moment";
 import Footer from "../components/footer";
+import { AppContext } from "../../Context/AppContext";
+import { useUser ,useAuth} from "@clerk/clerk-react";
+import axios from 'axios'
+import { toast } from "react-toastify";
+import { useEffect } from "react";
 const Applications = () => {
+  const {user}=useUser();
+  const {getToken}=useAuth();
+
   const [isEdit, setIsEdit] = useState(false);
-  // eslint-disable-next-line no-unused-vars
   const [resume, setResume] = useState(null);
+
+  const {BACKEND_URL,userData,userApplications,getuserData}=useContext(AppContext);
+
+  const updateUserResume=async()=>{
+    try {
+      if(!user){
+        toast.error('Login to upload resume');
+      }
+      const token=await getToken();
+      const formData=new FormData();
+      formData.append('resume',resume);
+      const {data}=await axios.post(`${BACKEND_URL}/api/users/update-resume`,formData,
+        {
+          headers:{Authorization:`Bearer ${token}`}
+        }
+      )
+      if(data.success){
+        console.log('resume updated successfully');
+        toast.success(data.message);
+        await getuserData();
+      }
+      else{
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+    setIsEdit(false);
+    setResume(null);
+  }
   return (
     <>
       <Navbar />
       <div className="container px-4 min-h-[65vh] 2xl:px-20 mx-auto my-10">
         <h2 className="text-xl font-semibold">Your Resume</h2>
         <div className="flex gap-2 mb-6 mt-3">
-          {isEdit ? (
+          {isEdit || userData && userData.resume===''
+          ? (
             <>
               <label className="flex items-center" htmlFor="resumeUpload">
                 <p className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg mr-2">
-                  Select Resume
+                  {resume ? resume.name : "Select Resume"}
                 </p>
                 <input
                   id="resumeUpload"
@@ -29,7 +67,8 @@ const Applications = () => {
                 <img src={assets.profile_upload_icon}></img>
               </label>
               <button
-                onClick={() => setIsEdit(false)}
+                
+                onClick={updateUserResume}
                 className="bg-green-100 text-green-400 rounded-lg px-4 py-2"
               >
                 save
@@ -39,7 +78,8 @@ const Applications = () => {
             <div className="flex gap-2">
               <a
                 className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg"
-                href=""
+                href={userData.resume}
+                target='_blank'
               >
                 Resume
               </a>
@@ -74,17 +114,17 @@ const Applications = () => {
             </tr>
           </thead>
           <tbody>
-            {jobsApplied.map((job, idx) => (
+            {userApplications.map((job, idx) => (
               <tr key={idx} className="hover:bg-gray-50 transition">
                 <td className="py-3 px-4 flex items-center gap-2 border-t border-gray-200">
-                  <img src={job.logo} className="w-8 h-8 object-contain" />
-                  {job.company}
+                  <img src={job.companyId.image} className="w-8 h-8 object-contain" />
+                  {job.companyId.name}
                 </td>
                 <td className="py-3 px-4 border-t border-gray-200">
-                  {job.title}
+                  {job.jobId.title}
                 </td>
                 <td className="py-3 px-4 border-t border-gray-200 max-sm:hidden">
-                  {job.location}
+                  {job.jobId.location}
                 </td>
                 <td className="py-3 px-4 border-t border-gray-200 max-sm:hidden">
                   {moment(job.date).format("ll")}

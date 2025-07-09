@@ -1,8 +1,10 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState,useContext } from "react";
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
 import { JobCategories, JobLocations } from "../assets/assets";
-
+import axios from "axios";
+import { toast } from "react-toastify";
+import { AppContext } from "../../Context/AppContext";
 const AddJob = () => {
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("Bangalore");
@@ -22,8 +24,37 @@ const AddJob = () => {
     }
   }, []);
 
+  const  {BACKEND_URL,companyToken}=useContext(AppContext);  
+  const handleAddJob=async(e)=>{
+    e.preventDefault()
+    try {
+      const {data}=await axios.post(`${BACKEND_URL}/api/company/post-job`,{
+        title,
+        description:quillRef.current.root.innerHTML,
+        location,
+        category,
+        level,
+        salary
+      },
+    {
+      headers:{token:companyToken}
+    })
+      if(data.success){
+        toast.success(data.message);
+        setTitle('');
+        setSalary(0);
+        quillRef.current.root.innerHTML='';
+      }
+      else{
+        toast.error(data.message); 
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+}
+
   return (
-    <form className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-md space-y-6">
+    <form onSubmit={handleAddJob} className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-md space-y-6">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">Add New Job</h2>
 
       {/* Job Title */}
@@ -108,6 +139,7 @@ const AddJob = () => {
       <button
         type="submit"
         className="w-full py-3 bg-orange-500 text-white font-semibold rounded-md hover:bg-orange-600 transition duration-200"
+        
       >
         Add Job
       </button>

@@ -15,7 +15,7 @@ const Navbar = () => {
         <img onClick={()=>Navigate("/")} className='cursor-pointer' src={assets.logo} alt="logo" />
         {isSignedIn ? (
           <div className="flex items-center gap-3">
-            <Link to={"./applications"}>Applied Jobs</Link>
+            <p  className="cursor-pointer" onClick={()=>Navigate('/applications')}>Applied Jobs</p>
             <p>|</p>
             <p className="max-sm:hidden">Hi {user.username}</p>
             <UserButton afterSignOutUrl="/" />

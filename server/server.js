@@ -7,21 +7,22 @@ import { clerkWebhooks } from './controllers/webhooks.js';
 import companyRoutes from './routes/companyRoutes.js';
 import connectCLoudinary from './config/cloudinary.js';
 import jobRoutes from './routes/jobRoutes.js'; 
+import userRoutes from './routes/userRoutes.js';
 import {clerkMiddleware} from '@clerk/express';
+
 
 const app = express();
 
 await connectDB();
 await connectCLoudinary();
 
-// // ✅ Sentry middleware (must come before routes)
 // app.use(Sentry.Handlers.requestHandler());
 // app.use(Sentry.Handlers.tracingHandler());
 
 app.use(cors());
 app.use(express.json());
-
-// ✅ Routes
+app.use(clerkMiddleware());
+//  Routes
 app.get('/', (req, res) => {
   res.send("hello from server");
 });
@@ -33,6 +34,7 @@ app.get('/', (req, res) => {
 app.post('/webhooks', clerkWebhooks);
 app.use('/api/company', companyRoutes);
 app.use('/api/jobs', jobRoutes);
+app.use('/api/users', userRoutes);
 
 // ✅ Error handling middleware (after all routes)
 // app.use(Sentry.Handlers.errorHandler());

@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import {v2 as cloudinary} from "cloudinary";
 import generateToken from "../utils/generateToken.js";
 import Job from "../models/Job.js";
+import JobApplication from "../models/JobApplication.js";
 //Register new company
 export const registerComapany=async(req,res)=>{
     const {companyname,email,password}=req.body;
@@ -31,7 +32,7 @@ export const registerComapany=async(req,res)=>{
             email : company.email,
             image : company.image
         },
-        generateToken:generateToken(company._id)
+        token:generateToken(company._id)
     });
     } catch (error) {
         return res.json({success :false,message:error.message});
@@ -59,7 +60,7 @@ export const loginCompany=async(req,res)=>{
             email : company.email,
             image : company.image
         },
-        generateToken:generateToken(company._id)});
+        token:generateToken(company._id)});
     } catch (error) {
         return res.json({success :false,message:error.message});
     }
@@ -108,7 +109,23 @@ export const postJob=async(req,res)=>{
     }
 }
 export const getCompanyJobApplicants=async(req,res)=>{
-
+    try {
+        const companyId=req.company._id;
+        if(!companyId){
+            return res.json({success:false,message:"Company not found"});
+        }
+        const jobApplicants=await JobApplication
+        .find({companyId})
+        .populate('jobId','title location category level salary')
+        .populate('userId','name resume image')
+        .exec()
+        if(!jobApplicants){
+            return res.json({success:false,message:"No job applicants found"});
+        }
+        return res.json({success:'true',jobApplicants});
+    } catch (error) {
+        return res.json({success:false,message:error.message});
+    }
 }
 export const getCompanyPostedJobs=async(req,res)=>{
     const id=req.company._id;
@@ -120,13 +137,32 @@ export const getCompanyPostedJobs=async(req,res)=>{
         if(!jobs){
             return res.json({success:false,message:"No jobs found"});
         }
-        return res.json({success:true,jobs});
+
+        const jobsData=await Promise.all(jobs.map(async(job)=>{
+            const applicants=await JobApplication.find({jobId:job._id});
+            return  {...job.toObject(),applicants:applicants.length};
+        }))
+        return res.json({success:true,jobsData});
     } catch (error) {   
         return res.json({success:false,message:error.message});
     }
 }
 export const changeJobStatus=async(req,res)=>{
-    
+    const {id,status}=req.body;
+    if(!id || !status){
+        return res.json({success:false,message:"Missing required fields"});
+    }
+    try {
+        const jobApplication=await JobApplication.findById(id);
+        if(!jobApplication){
+            return res.json({success:false,message:"Job application not found"});
+        }
+        jobApplication.status=status;
+        await jobApplication.save();
+        return res.json({success:true,jobApplication});
+    } catch (error) {
+        return res.json({success:false,message:error.message});
+    }
 }
 export const changeVisibility=async(req,res)=>{
     const {id}=req.body;
