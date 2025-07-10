@@ -19,7 +19,10 @@ await connectCLoudinary();
 // app.use(Sentry.Handlers.requestHandler());
 // app.use(Sentry.Handlers.tracingHandler());
 
-app.use(cors());
+app.use(cors({
+  origin: "https://job-portal-client-livid-beta.vercel.app", 
+  credentials: true // if you're using cookies or sessions
+}));
 app.use(express.json());
 app.use(clerkMiddleware());
 //  Routes
