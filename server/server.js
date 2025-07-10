@@ -20,9 +20,10 @@ await connectCLoudinary();
 // app.use(Sentry.Handlers.tracingHandler());
 
 app.use(cors({
-  origin: "https://job-portal-client-b14pscu9v-dhairyatiwari186-gmailcoms-projects.vercel.app", 
-  credentials: true // if you're using cookies or sessions
+  origin: "https://job-portal-client-74sn4hqp3-dhairyatiwari186-gmailcoms-projects.vercel.app",
+  credentials: true
 }));
+
 app.use(express.json());
 app.use(clerkMiddleware());
 //  Routes
