@@ -22,14 +22,13 @@ await connectCLoudinary();
 const allowedRegex = /^https:\/\/job-portal-client-[a-z0-9]+-dhairyatiwari186-gmailcoms-projects\.vercel\.app$/;
 
 app.use(cors({
-  origin: true,
-  //(origin, callback) => {
-  //   if (!origin || allowedRegex.test(origin)) {
-  //     callback(null, true);
-  //   } else {
-  //     callback(new Error("Not allowed by CORS: " + origin));
-  //   }
-  // },
+  origin: (origin, callback) => {
+    if (!origin || allowedRegex.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS not allowed for origin: " + origin));
+    }
+  },
   credentials: true
 }));
 
