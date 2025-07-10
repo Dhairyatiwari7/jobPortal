@@ -19,8 +19,16 @@ await connectCLoudinary();
 // app.use(Sentry.Handlers.requestHandler());
 // app.use(Sentry.Handlers.tracingHandler());
 
+const allowedRegex = /^https:\/\/job-portal-client-[a-z0-9]+-dhairyatiwari186-gmailcoms-projects\.vercel\.app$/;
+
 app.use(cors({
-  origin: "https://job-portal-client-74sn4hqp3-dhairyatiwari186-gmailcoms-projects.vercel.app",
+  origin: (origin, callback) => {
+    if (!origin || allowedRegex.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS: " + origin));
+    }
+  },
   credentials: true
 }));
 
